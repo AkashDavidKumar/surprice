@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Surprise For You!</title>
+    <style>
+        :root {
+            --neon-green: #00ff41;
+            --terminal-bg: #050505;
+            --glitch-red: #ff0000;
+            --glitch-blue: #00ffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: default;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            background: #ffffff;
+        }
+
+        /* Stage 1: White Screen */
+        #stage1 {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            background: white;
+            z-index: 100;
+            position: absolute;
+        }
+
+        .surprise-btn {
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(45deg, #ff6b6b, #f06595);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Dark Terminal Container */
+        #main-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--terminal-bg);
+            color: var(--neon-green);
+            flex-direction: column;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* HIGH-INTENSITY LOGO GLITCH */
+        #hacker-intro {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hacker-logo-wrapper {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+        }
+
+        .hacker-logo {
+            width: 100%;
+            height: 100%;
+            fill: var(--neon-green);
+            filter: drop-shadow(0 0 10px var(--neon-green));
+            animation: aggressive-glitch 0.4s infinite;
+        }
+
+        .hacker-logo::after, .hacker-logo::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: inherit;
+            opacity: 0.5;
+        }
+
+        @keyframes aggressive-glitch {
+            0% { transform: translate(0); filter: drop-shadow(0 0 5px var(--neon-green)); }
+            10% { transform: translate(-5px, -2px); filter: drop-shadow(2px 0 red); }
+            20% { transform: translate(5px, 2px); filter: drop-shadow(-2px 0 blue); }
+            30% { transform: translate(-2px, 5px); clip-path: inset(10% 0 40% 0); }
+            40% { transform: translate(2px, -5px); clip-path: inset(50% 0 10% 0); }
+            50% { transform: scale(1.1); opacity: 0.8; }
+            60% { transform: translate(-10px, 0); }
+            70% { transform: translate(10px, 0); clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%); }
+            100% { transform: translate(0); }
+        }
+
+        #terminal {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            height: 65vh;
+            overflow-y: auto;
+            display: none;
+            scrollbar-width: none;
+            padding-bottom: 100px;
+        }
+
+        .line { margin-bottom: 8px; font-size: 0.95rem; text-shadow: 0 0 5px var(--neon-green); }
+
+        /* Progress Bar */
+        #progress-container {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85%;
+            max-width: 500px;
+            display: none;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border: 1px solid #333;
+        }
+
+        .progress-bar { width: 100%; height: 8px; border: 1px solid var(--neon-green); padding: 1px; margin-top: 10px; }
+        .progress-fill { height: 100%; width: 0%; background: var(--neon-green); transition: width 0.4s cubic-bezier(0.1, 1, 0.1, 1); }
+
+        /* Reveal Stage */
+        #reveal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            background: radial-gradient(circle, #220000 0%, #000000 100%);
+            color: #fff;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            text-align: center;
+        }
+
+        .reveal-title { font-size: 5rem; color: #ff0000; margin-bottom: 20px; animation: shake 0.1s infinite; font-weight: 900; }
+        
+        .info-btn {
+            margin-top: 30px;
+            padding: 15px 30px;
+            background: white;
+            border: none;
+            color: black;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .info-btn:hover { background: #ff0000; color: white; transform: scale(1.1); }
+
+        #info-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 450px;
+            background: #111;
+            padding: 30px;
+            border: 2px solid #ff0000;
+            z-index: 3000;
+            box-shadow: 0 0 100px rgba(255,0,0,0.4);
+            color: white;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translate(0,0) rotate(0deg); }
+            20% { transform: translate(-3px, 3px) rotate(1deg); }
+            40% { transform: translate(3px, -3px) rotate(-1deg); }
+            60% { transform: translate(-3px, -3px) rotate(1deg); }
+            80% { transform: translate(3px, 3px) rotate(-1deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="stage1">
+        <button class="surprise-btn" id="startBtn">🎁 Tap for Surprise 😍</button>
+    </div>
+
+    <div id="main-container">
+        <div id="hacker-intro">
+            <div class="hacker-logo-wrapper">
+                <svg class="hacker-logo" viewBox="0 0 24 24">
+                    <path d="M12 2a10 10 0 1 0 10 10H12V2zM12 12L2.69 17.81M12 12l9.31 5.81M12 12V22M9 10a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM15 10a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/>
+                </svg>
+            </div>
+            <h2 id="status-main">ESTABLISHING ENCRYPTED TUNNEL...</h2>
+        </div>
+
+        <div id="terminal">
+            <div id="lines"></div>
+        </div>
+
+        <div id="progress-container">
+            <div id="progress-text" style="font-size: 0.8rem; letter-spacing: 2px;">READY_... 0%</div>
+            <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+        </div>
+    </div>
+
+    <div id="reveal">
+        <h1 class="reveal-title">💀 APRIL FOOL! 😂</h1>
+        <p style="font-size: 1.5rem;">Your data is completely safe. 😎🔥</p>
+        <button class="info-btn" onclick="showInfo()">Wait, what is April Fool?</button>
+    </div>
+
+    <div id="info-modal">
+        <h2 style="color: #ff0000; margin-bottom: 15px;">Origin of April Fools'</h2>
+        <p style="line-height: 1.6; font-size: 0.95rem;">
+            April Fools' Day, celebrated on **April 1st**, is an annual tradition of practical jokes and hoaxes. 
+            <br><br>
+            Its true origin is a mystery, but many historians believe it dates back to **1582**, when France switched from the Julian to the **Gregorian calendar**. 
+            Those who were slow to get the news and continued to celebrate the New Year on April 1st became the butt of jokes and were called **"April Fools."**
+        </p>
+        <button class="info-btn" onclick="closeInfo()" style="width:100%; margin-top: 20px;">Got it, thanks!</button>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('startBtn');
+        const stage1 = document.getElementById('stage1');
+        const mainContainer = document.getElementById('main-container');
+        const hackerIntro = document.getElementById('hacker-intro');
+        const terminal = document.getElementById('terminal');
+        const linesContainer = document.getElementById('lines');
+        const progressFill = document.getElementById('progress-fill');
+        const progressText = document.getElementById('progress-text');
+        const reveal = document.getElementById('reveal');
+
+        let currentProgress = 0; 
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playBeep(freq = 440, duration = 0.1, type = 'square') {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const sleep = (ms) => new Promise(res => setTimeout(res, ms));
+
+        async function typeLine(text, color = null, fast = false) {
+            const line = document.createElement('div');
+            line.className = 'line';
+            if(color) line.style.color = color;
+            linesContainer.appendChild(line);
+            for(let char of text) {
+                line.textContent += char;
+                if(Math.random() > 0.8) playBeep(800 + (Math.random() * 200), 0.03, 'sine');
+                await sleep(fast ? 5 : 25);
+            }
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        async function advanceProgress(target, label, speed = 80) {
+            const startValue = currentProgress;
+            const diff = target - startValue;
+            const steps = 30;
+
+            for(let i = 1; i <= steps; i++) {
+                currentProgress = Math.round(startValue + (diff * (i / steps)));
+                progressFill.style.width = currentProgress + '%';
+                progressText.innerText = `${label.toUpperCase()}... ${currentProgress}%`;
+                if(navigator.vibrate) navigator.vibrate(15);
+                if(i % 5 === 0) playBeep(200, 0.05);
+                await sleep(speed);
+            }
+        }
+
+        async function runHackerSequence() {
+            stage1.style.display = 'none';
+            mainContainer.style.display = 'flex';
+            hackerIntro.style.display = 'flex';
+            
+            // Initial Glitch Intro (3 seconds)
+            await sleep(3000);
+            hackerIntro.style.display = 'none';
+            terminal.style.display = 'block';
+            document.getElementById('progress-container').style.display = 'block';
+
+            // Sequence (Total ~12-15 seconds)
+            await typeLine("> INIT LOCAL_HOST_EXPLOIT... [v2.4.9]");
+            await advanceProgress(10, "Scanning system");
+            await sleep(500);
+
+            await typeLine("> Found open port: 8080 (VULNERABLE)");
+            await typeLine("> Executing buffer overflow...");
+            await advanceProgress(25, "Injecting payload");
+            await sleep(800);
+
+            await typeLine("> ROOT_ACCESS: GRANTED", "#00ff00");
+            const randomIP = `103.24.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+            await typeLine(`> Target IP: ${randomIP} [Tamil Nadu, IN]`);
+            await advanceProgress(40, "Tracing geolocation");
+            await sleep(600);
+
+            await typeLine("> Scanning browser cookies and stored passwords...");
+            await typeLine("> Found 14 stored logins (Chrome/Edge/Safari)", "#ff3e3e");
+            await advanceProgress(60, "Downloading credentials", 120);
+
+            await typeLine("> Accessing private file system...");
+            await typeLine("> Found: DCIM/Camera/IMG_20240321_*.jpg", "#ff3e3e");
+            await typeLine("> Found: WhatsApp/Databases/msgstore.db.crypt14", "#ff3e3e");
+            await advanceProgress(85, "Uploading sensitive files", 150);
+            await sleep(1000);
+
+            await typeLine("> Deleting local backups to prevent recovery...");
+            await typeLine("> Clearing System Logs...", "#ff3e3e");
+            await advanceProgress(99, "Cleaning tracks", 100);
+            
+            await sleep(1500);
+            await typeLine("> ERASING ALL DATA IN 3... 2... 1...", "#ff0000");
+            await advanceProgress(100, "SYSTEM WIPE");
+            
+            playBeep(50, 0.8, 'sawtooth');
+            await sleep(500);
+
+            // Final Transition
+            reveal.style.display = 'flex';
+        }
+
+        function showInfo() { document.getElementById('info-modal').style.display = 'block'; }
+        function closeInfo() { document.getElementById('info-modal').style.display = 'none'; }
+
+        startBtn.addEventListener('click', () => {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            runHackerSequence();
+        });
+    </script>
+</body>
+</html>
