@@ -25,7 +25,29 @@
             overflow: hidden;
             font-family: 'Courier New', Courier, monospace;
             background: #ffffff;
+            transition: transform 0.05s;
         }
+
+        /* Scanline Overlay */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%,
+                rgba(0, 0, 0, 0.1) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 3px, 3px 100%;
+            z-index: 5000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s;
+        }
+        .scanlines.active { opacity: 1; }
 
         /* Stage 1: White Screen */
         #stage1 {
@@ -88,8 +110,8 @@
 
         .hacker-logo-wrapper {
             position: relative;
-            width: 150px;
-            height: 150px;
+            width: 180px;
+            height: 180px;
             margin-bottom: 20px;
         }
 
@@ -97,28 +119,52 @@
             width: 100%;
             height: 100%;
             fill: var(--neon-green);
-            filter: drop-shadow(0 0 10px var(--neon-green));
-            animation: aggressive-glitch 0.4s infinite;
+            filter: drop-shadow(0 0 15px var(--neon-green));
+            position: relative;
+            z-index: 1;
         }
 
-        .hacker-logo::after, .hacker-logo::before {
-            content: '';
+        /* Higher Fidelity Glitch Layers */
+        .hacker-logo-wrapper::before,
+        .hacker-logo-wrapper::after {
+            content: "";
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: inherit;
-            opacity: 0.5;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%2300ff41' d='M12 2a10 10 0 1 0 10 10H12V2zM12 12L2.69 17.81M12 12l9.31 5.81M12 12V22M9 10a1 1 0 1 0 0 2 1 1 0 0 0 0-2zM15 10a1 1 0 1 0 0 2 1 1 0 0 0 0-2z'/%3E%3C/svg%3E") no-repeat center;
+            background-size: contain;
+            opacity: 0.7;
         }
 
-        @keyframes aggressive-glitch {
-            0% { transform: translate(0); filter: drop-shadow(0 0 5px var(--neon-green)); }
-            10% { transform: translate(-5px, -2px); filter: drop-shadow(2px 0 red); }
-            20% { transform: translate(5px, 2px); filter: drop-shadow(-2px 0 blue); }
-            30% { transform: translate(-2px, 5px); clip-path: inset(10% 0 40% 0); }
-            40% { transform: translate(2px, -5px); clip-path: inset(50% 0 10% 0); }
-            50% { transform: scale(1.1); opacity: 0.8; }
-            60% { transform: translate(-10px, 0); }
-            70% { transform: translate(10px, 0); clip-path: polygon(0 0, 100% 20%, 100% 80%, 0 100%); }
-            100% { transform: translate(0); }
+        .hacker-logo-wrapper::before {
+            left: 4px;
+            filter: drop-shadow(-4px 0 #ff00c1);
+            animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
+        }
+
+        .hacker-logo-wrapper::after {
+            left: -4px;
+            filter: drop-shadow(4px 0 #00fff9);
+            animation: glitch-anim-2 3.2s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 30% 0); transform: translate(-5px, 2px); }
+            10% { clip-path: inset(60% 0 10% 0); transform: translate(5px, -2px); }
+            20% { clip-path: inset(10% 0 70% 0); transform: translate(-2px, 5px); }
+            30% { clip-path: inset(40% 0 40% 0); transform: translate(2px, -5px); }
+            40% { clip-path: inset(80% 0 5% 0); transform: translate(-5px, 0px); }
+            50% { clip-path: inset(5% 0 85% 0); transform: translate(5px, 0px); }
+            60% { clip-path: inset(30% 0 30% 0); transform: translate(0px, 0px); }
+            100% { clip-path: inset(20% 0 30% 0); transform: translate(-5px, 2px); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(80% 0 5% 0); transform: translate(5px, -2px); }
+            10% { clip-path: inset(10% 0 80% 0); transform: translate(-5px, 2px); }
+            20% { clip-path: inset(50% 0 20% 0); transform: translate(2px, -5px); }
+            30% { clip-path: inset(30% 0 50% 0); transform: translate(-2px, 5px); }
+            40% { clip-path: inset(70% 0 10% 0); transform: translate(5px, 0px); }
+            100% { clip-path: inset(80% 0 5% 0); transform: translate(5px, -2px); }
         }
 
         #terminal {
@@ -168,7 +214,66 @@
             text-align: center;
         }
 
-        .reveal-title { font-size: 5rem; color: #ff0000; margin-bottom: 20px; animation: shake 0.1s infinite; font-weight: 900; }
+        .reveal-title { 
+            position: relative;
+            font-size: 5rem; 
+            color: #ff0000; 
+            margin-bottom: 20px; 
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .reveal-title::before,
+        .reveal-title::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: black;
+            clip-path: inset(50% 0 50% 0);
+        }
+
+        .reveal-title::before {
+            left: 3px;
+            text-shadow: -3px 0 #00fff9;
+            animation: title-glitch-1 2s infinite linear alternate-reverse;
+        }
+
+        .reveal-title::after {
+            left: -3px;
+            text-shadow: -3px 0 #ff00c1;
+            animation: title-glitch-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes title-glitch-1 {
+            0% { clip-path: inset(10% 0 80% 0); }
+            20% { clip-path: inset(70% 0 10% 0); }
+            40% { clip-path: inset(30% 0 40% 0); }
+            60% { clip-path: inset(50% 0 50% 0); }
+            80% { clip-path: inset(10% 0 20% 0); }
+            100% { clip-path: inset(80% 0 5% 0); }
+        }
+
+        @keyframes title-glitch-2 {
+            0% { clip-path: inset(40% 0 40% 0); }
+            20% { clip-path: inset(10% 0 90% 0); }
+            40% { clip-path: inset(80% 0 10% 0); }
+            60% { clip-path: inset(20% 0 50% 0); }
+            80% { clip-path: inset(60% 0 20% 0); }
+            100% { clip-path: inset(30% 0 60% 0); }
+        }
+
+        /* Screen-wide Glitch Burst */
+        .glitch-burst {
+            animation: screen-shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
+            filter: invert(1) hue-rotate(90deg);
+        }
+
+        @keyframes screen-shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
         
         .info-btn {
             margin-top: 30px;
@@ -211,6 +316,7 @@
 </head>
 <body>
 
+    <div class="scanlines" id="scanlines"></div>
     <div id="stage1">
         <button class="surprise-btn" id="startBtn">🎁 Tap for Surprise 😍</button>
     </div>
@@ -236,7 +342,7 @@
     </div>
 
     <div id="reveal">
-        <h1 class="reveal-title">💀 APRIL FOOL! 😂</h1>
+        <h1 class="reveal-title" data-text="💀 APRIL FOOL! 😂">💀 APRIL FOOL! 😂</h1>
         <p style="font-size: 1.5rem;">Your data is completely safe. 😎🔥</p>
         <button class="info-btn" onclick="showInfo()">Wait, what is April Fool?</button>
     </div>
@@ -265,6 +371,12 @@
 
         let currentProgress = 0; 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const scanlines = document.getElementById('scanlines');
+
+        const randomChar = () => {
+            const chars = '!@#$%^&*()_+-=[]{}|;:,.<>?/0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            return chars[Math.floor(Math.random() * chars.length)];
+        };
 
         function playBeep(freq = 440, duration = 0.1, type = 'square') {
             const osc = audioCtx.createOscillator();
@@ -302,7 +414,18 @@
             for(let i = 1; i <= steps; i++) {
                 currentProgress = Math.round(startValue + (diff * (i / steps)));
                 progressFill.style.width = currentProgress + '%';
-                progressText.innerText = `${label.toUpperCase()}... ${currentProgress}%`;
+                
+                // Add occasional flickering text glitch
+                if (Math.random() > 0.9) {
+                    let flickered = label.toUpperCase().split('').map(c => Math.random() > 0.8 ? randomChar() : c).join('');
+                     progressText.innerText = `${flickered}... ${currentProgress}%`;
+                     setTimeout(() => {
+                        progressText.innerText = `${label.toUpperCase()}... ${currentProgress}%`;
+                     }, 50);
+                } else {
+                    progressText.innerText = `${label.toUpperCase()}... ${currentProgress}%`;
+                }
+
                 if(navigator.vibrate) navigator.vibrate(15);
                 if(i % 5 === 0) playBeep(200, 0.05);
                 await sleep(speed);
@@ -313,6 +436,16 @@
             stage1.style.display = 'none';
             mainContainer.style.display = 'flex';
             hackerIntro.style.display = 'flex';
+            scanlines.classList.add('active');
+
+            // Periodic Screen Glitch
+            const glitchInterval = setInterval(() => {
+                if (Math.random() > 0.85) {
+                    document.body.classList.add('glitch-burst');
+                    playBeep(100, 0.05, 'sawtooth');
+                    setTimeout(() => document.body.classList.remove('glitch-burst'), 100 + Math.random() * 200);
+                }
+            }, 1000);
             
             // Initial Glitch Intro (3 seconds)
             await sleep(3000);
@@ -358,6 +491,8 @@
             await sleep(500);
 
             // Final Transition
+            clearInterval(glitchInterval);
+            scanlines.classList.remove('active');
             reveal.style.display = 'flex';
         }
 
